@@ -1,9 +1,20 @@
 import Link from "next/link";
-import React from "react";
+import { Metadata } from "next";
 
-type petSearchQuery = {
+export const metadata: Metadata = {
+  title: "Animals Blog",
+  description: "A list of animals on my animals route.",
+};
+
+type petsSearchQuery = {
   sortBy: string;
 };
+
+// FunkyNextObject = {
+//     searchParms: {
+//         sortBy: 'Whatever we do with ?sortBy=something'
+//     }
+// }
 
 type petsType = {
   name: string;
@@ -37,30 +48,31 @@ let pets: petsType[] = [
   },
 ];
 
-//next js 'exposes' the search Params to us (search Params being the ?query=something in URLs). We're deconstructing that and then typing it.
+// this compares each object in our pets array. If object a.name is < object b.name, it will swap them in the array.
+// but don't worry about this too much: to quote Tod, it just works.
+function comparePets(a: petsType, b: petsType) {
+  if (a.name < b.name) {
+    return -1;
+  } else if (a.name > b.name) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+// next js 'exposes' the search Params to us (search params being the ?query=something in URLS). We're destructing that and then typing it.
 export default function Page({
   searchParams,
 }: {
-  searchParams: petSearchQuery;
+  searchParams: petsSearchQuery;
 }) {
-  // this compares each object in our pets array. If object a < object b, it will swap them in the array.
-  function comparePets(a: petsType, b: petsType) {
-    if (a.name < b.name) {
-      return -1;
-    } else if (a.name > b.name) {
-      return 1;
-    } else {
-      return 0;
-    }
-  }
-
-  // making a copy of the pets array so we don't mutate it. (if we just use the pets, it makes it impossible to 'undo' the sorting)
+  // making a copy of the pets array so we don't mutate it. (if we just use the pets, it makes it impossible to 'undo' any sorting, even when there are no serach params)
   let sortedPets = [...pets];
 
   if (searchParams.sortBy == "asc") {
-    pets.sort(comparePets);
+    sortedPets.sort(comparePets);
   } else if (searchParams.sortBy == "desc") {
-    pets.sort(comparePets).reverse();
+    sortedPets.sort(comparePets).reverse();
   }
 
   return (
@@ -70,18 +82,15 @@ export default function Page({
       <br />
       <Link href="/animals">Remove the sort</Link>
       <br />
-      <br />
       <Link href="/animals?sortBy=asc">Sort by ascending</Link>
-      <br />
       <br />
       <Link href="/animals?sortBy=desc">Sort by descending</Link>
       <br />
       <br />
       <br />
-      {pets.map((pet) => {
+      {sortedPets.map((pet) => {
         return (
           <div key={pet.id}>
-            <br />
             <Link href={`/animals/${pet.name.toLowerCase()}`}>{pet.name}</Link>
           </div>
         );
